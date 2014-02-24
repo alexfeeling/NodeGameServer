@@ -1,29 +1,50 @@
 var net = require('net');
 var allSockets = [];
-var server = net.createServer(function(socket) {
+var SERVER_HOST = "192.168.1.100";
+var SERVER_PORT = 61345;
+var server = net.createServer(onSocketConnect);
+server.listen(SERVER_PORT, SERVER_HOST, function(){
+	console.log('server listening');
+});
+
+function closeClient(socket) {
+	if (socket.connected) {
+		socket.close();
+	}
+	var idx = allSockets.indexOf(socket);
+	if (idx >= 0) {
+		allSockets.splice(idx, 1);
+	}
+}
+
+function onSocketConnect(socket) {
 	allSockets.push(socket);
 	console.log('a client connect');
-	socket.on('data', function(data){
+	socket.on('data', function onSocketData(data) {
 		var offset = 0;
 		while(offset < data.length) {
-			var type = data.readInt8(offset);
-			var len = data.readInt8(offset+1);
-			var str = data.toString('utf8', offset+2, offset+len+2);
-			console.log('received type:' + type + ', data:' + str);
-			offset += len+2;
-		}
-		console.log(offset + ',' + data.length);
-		for (var i = 0; i < 100; i++) {
-			var str = "hello client!" + i;
-			var buffer = new Buffer(1 + str.length);
-			buffer.writeInt8(str.length, 0);
-			buffer.write(str, 1, str.length);
-			//console.log(socket._connecting);
-			//if (!socket._connecting) break;
-			socket.write(buffer);
-			buffer.length = 0;
+			var dataLen = data.readInt32(offset);
+			offset += 4;
+			var dataStr = data.toString('utf8', offset, offset + dataLen);
+			offset += dataLen;
+			var dataObj = encodeData(dataStr);
+			switch(dataObj.name) {
+				case 'login'://登录
+					loginHandler(dataObj);
+					break;
+				case 'register'://注册
+					
+					break;
+				case 'move'://行走，前进后退
+					
+					break;
+				case 'turn'://转弯
+					
+					break;
+			}
 		}
 	});
+	
 	socket.on('end', function(){
 		console.log('a client end');
 		if (!socket.destroyed) socket.destroy();
@@ -37,26 +58,53 @@ var server = net.createServer(function(socket) {
 		if (had_error) {
 			console.log('a client close on error');
 		}
-		var idx = allSockets.indexOf(socket);
-		if (idx >= 0) {
-			allSockets.splice(idx, 1);
-		}
+		closeClient(socket);
 	});
 	socket.on('error', function(error) {
 		console.log('error:' + error);
-		socket.close();
+		socket.destroy();
+		closeClient(socket);
 	});
-	//var i = 0;
-	//for (i = 0; i < 100; i++) {
-		//var str = "hello client" + i;
-		//var buffer = new Buffer(str.length*2+1);
-		//console.log(str.length * 2+1);
-		//buffer.write(str.length * 2 + 1);
-		//buffer.write(str);
-		//socket.write(buffer);
-		//buffer.length = 0;
-	//}
-});
-server.listen(8899, function(){
-	console.log('server listening');
-});
+	
+	function loginHandler(dataObj) {
+		if (dataObj.un == 'alex' && dataObj.psw == '1234') {
+			
+		} 
+	}
+}
+
+
+
+///编码数据
+function codeData(vData:Object):String {
+	if (vData == null) {
+		return "";
+	}
+	var resultList = [];
+	for (var key in vData) {
+		resultList.push(key + "=" + vData[key]);
+	}
+	return resultList.join("&");
+}
+
+///解码数据
+function encodeData(str) {
+	var dataArr = str.split('&');
+	var resultData = {};
+	for (var i = 0; i < dataArr.length; i++) {
+		var keyVal = dataArr[i].split('=');
+		resultData[keyVal[0]] = keyVal[1];
+	}
+	return resultData;
+}
+
+
+
+
+
+
+
+
+
+
+
