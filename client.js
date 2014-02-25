@@ -1,25 +1,7 @@
-var net = require('net');
-var allSockets = [];
-var SERVER_HOST = "192.168.1.100";
-var SERVER_PORT = 61345;
-var server = net.createServer(onSocketConnect);
-server.listen(SERVER_PORT, SERVER_HOST, function(){
-	console.log('server listening');
-});
-
-function closeClient(socket) {
-	if (socket.connected) {
-		socket.close();
-	}
-	var idx = allSockets.indexOf(socket);
-	if (idx >= 0) {
-		allSockets.splice(idx, 1);
-	}
-}
-
-function onSocketConnect(socket) {
-	allSockets.push(socket);
-	console.log('a client connect');
+var engine = require('./engine');
+var idCount = 0;
+function Client(socket) {
+	this.id = idCount++;
 	socket.on('data', function onSocketData(data) {
 		var offset = 0;
 		while(offset < data.length) {
@@ -47,36 +29,39 @@ function onSocketConnect(socket) {
 	
 	socket.on('end', function(){
 		console.log('a client end');
-		if (!socket.destroyed) socket.destroy();
-		var idx = allSockets.indexOf(socket);
-		if (idx >= 0) {
-			allSockets.splice(idx, 1);
-		}
+		//if (!socket.destroyed) socket.destroy();
+		//var idx = allSockets.indexOf(socket);
+		//if (idx >= 0) {
+			//allSockets.splice(idx, 1);
+		//}
+		engine.closeClient(this);
 	});
 	
 	socket.on('close', function(had_error){
 		if (had_error) {
 			console.log('a client close on error');
 		}
-		closeClient(socket);
+		socket.destroy();
+		engine.closeClient(this);
 	});
+	
 	socket.on('error', function(error) {
 		console.log('error:' + error);
 		socket.destroy();
-		closeClient(socket);
+		engine.closeClient(this);
 	});
 	
-	function loginHandler(dataObj) {
-		if (dataObj.un == 'alex' && dataObj.psw == '1234') {
-			
-		} 
-	}
+}
+module.exports = Client;
+
+function loginHandler(dataObj) {
+	if (dataObj.un == 'alex' && dataObj.psw == '1234') {
+		
+	} 
 }
 
-
-
 ///编码数据
-function codeData(vData:Object):String {
+function codeData(vData) {
 	if (vData == null) {
 		return "";
 	}
@@ -97,14 +82,3 @@ function encodeData(str) {
 	}
 	return resultData;
 }
-
-
-
-
-
-
-
-
-
-
-
