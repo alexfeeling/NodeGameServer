@@ -5,11 +5,11 @@ var idCount = 0;
 
 function Client(socket) {
 	var engine = run.engine;
-	var id = idCount + '';
+	this.id = idCount + '';
 	idCount++;
-	var x = 0;
-	var y = 0;
-	var rotation = 0;
+	this.x = 0;
+	this.y = 0;
+	this.rotation = 0;
 	
 	function sendData(pack) {
 		var dataStr = codeData(pack.data);
@@ -35,7 +35,7 @@ function Client(socket) {
 			pack.data = encodeData(dataStr);
 			switch(pack.code) {
 				case 0://登录
-					loginHandler(dataList);
+					loginHandler(pack.data);
 					break;
 				case 1://注册
 					
@@ -72,7 +72,10 @@ function Client(socket) {
 	function loginHandler(dataList) {
 		if (dataList[0]== 'alex' && dataList[1] == '1234') {
 			console.log('login success ' + dataList);
-			sendData(0, [id]);
+			var pack = new SocketPackage();
+			pack.code = 0;
+			pack.data = [1, exports.id];
+			sendData(pack);
 		} 
 		
 	}
@@ -82,11 +85,8 @@ function Client(socket) {
 		
 	}
 	
-	this.id = id;
-	this.x = x;
-	this.y = y;
-	this.rotation = rotation;
 	this.sendData = sendData;
+	
 }
 module.exports = Client;
 
@@ -112,6 +112,6 @@ function encodeData(str) {
 		//resultData[keyVal[0]] = keyVal[1];
 	//}
 	//return resultData;
-	var dataList:Array = vStr.split(",");
+	var dataList = str.split(",");
 	return dataList;
 }

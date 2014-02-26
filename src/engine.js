@@ -1,6 +1,6 @@
 var net = require('net');
 var Client = require('./client');
-var SERVER_HOST = "192.168.1.192";// "192.168.1.100";
+var SERVER_HOST = "192.168.1.100";
 var SERVER_PORT = 61345;
 function Engine() {
 	var allClients = {};
