@@ -1,6 +1,6 @@
 var net = require('net');
 var Client = require('./client');
-var SERVER_HOST = "192.168.1.100";
+var SERVER_HOST = "192.168.1.192";// "192.168.1.100";
 var SERVER_PORT = 61345;
 function Engine() {
 	var allClients = {};
@@ -8,7 +8,6 @@ function Engine() {
 	var server = net.createServer(function onSocketConnect(socket) {
 		console.log('a client connect');
 		var client = new Client(socket);
-		console.log(client.id, client);
 		allClients[client.id] = client;
 	});
 	server.listen(SERVER_PORT, SERVER_HOST, function(){
@@ -30,7 +29,7 @@ function Engine() {
 		});
 	}
 }
-//var engine = new Engine();
+
 module.exports = Engine;
 
 
