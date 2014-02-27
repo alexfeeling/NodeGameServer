@@ -1,11 +1,13 @@
 //var Engine = require('./engine');
+var util = require('util');
 var run = require('./run');
 var SocketPackage = require('./socketPackage');
 var idCount = 0;
 
 function Client(socket) {
 	var engine = run.engine;
-	this.id = idCount + '';
+	var id = idCount + '';
+	this.id = id;
 	idCount++;
 	this.x = 0;
 	this.y = 0;
@@ -52,21 +54,22 @@ function Client(socket) {
 	
 	socket.on('end', function(){
 		console.log('a client end');
-		engine.closeClient(this);
+		engine.closeClient(id);
 	});
 	
-	socket.on('close', function(had_error){
+	socket.on('close', function(had_error) {
+		console.log('a client close');
 		if (had_error) {
 			console.log('a client close on error');
+			socket.destroy();
+			engine.closeClient(exports.id);
 		}
-		socket.destroy();
-		engine.closeClient(this);
 	});
 	
 	socket.on('error', function(error) {
 		console.log('error:' + error);
 		socket.destroy();
-		engine.closeClient(this);
+		engine.closeClient(exports.id);
 	});
 	
 	function loginHandler(dataList) {
@@ -77,7 +80,11 @@ function Client(socket) {
 			pack.data = [1, exports.id];
 			sendData(pack);
 		} 
-		
+		var pack = new SocketPackage();
+		pack.code = 100;
+		pack.data = [socket.remotePort, socket.remoteAddress];
+		//console.log('id:' + id);
+		engine.sendBroadcast(pack, id);
 	}
 
 	function moveHandler(dataObj) {
