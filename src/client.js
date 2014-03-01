@@ -1,17 +1,19 @@
-//var Engine = require('./engine');
+var engine = require('./engine');
 var util = require('util');
-var run = require('./run');
 var SocketPackage = require('./socketPackage');
 var idCount = 0;
 
 function Client(socket) {
-	var engine = run.engine;
 	var id = idCount + '';
-	this.id = id;
+	var mapX = 0;
+	var mapY = 0;
+	var x = 0;
+	var y = 0;
+	var rotation = 0;
 	idCount++;
-	this.x = 0;
-	this.y = 0;
-	this.rotation = 0;
+	
+	var nat_port = 0;
+	var nat_address = '';
 	
 	function sendData(pack) {
 		var dataStr = codeData(pack.data);
@@ -92,6 +94,14 @@ function Client(socket) {
 		
 	}
 	
+	this.id = id;
+	this.x = x;
+	this.y = x;
+	this.mapX = mapX;
+	this.mapY = mapY;
+	this.rotation = rotation;
+	this.nat_port = nat_port;
+	this.nat_address = nat_address;
 	this.sendData = sendData;
 	
 }

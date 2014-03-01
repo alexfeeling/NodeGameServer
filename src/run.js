@@ -1,3 +1,4 @@
-var Engine = require('./engine');
-var engine = new Engine();
-exports.engine = engine;
+var engine = require('./engine');
+//var engine = new Engine();
+engine.start();
+//exports.engine = engine;
